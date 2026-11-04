@@ -3,7 +3,7 @@ use axum::extract::ws::{Message, WebSocket};
 use futures::{SinkExt, StreamExt};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
-use tokio::sync::Mutex;
+use tokio::sync::mpsc;
 use tracing::{error, info};
 
 #[derive(Debug, Deserialize)]
@@ -46,6 +46,17 @@ pub async fn handle_socket(
     agent: Arc<AgentEngine>,
 ) {
     let (mut sender, mut receiver) = socket.split();
+    let (tx, mut rx) = mpsc::unbounded_channel::<Message>();
+
+    // Tarefa dedicada de envio (escrita assíncrona sem travas)
+    let send_task = tokio::spawn(async move {
+        while let Some(msg) = rx.recv().await {
+            if sender.send(msg).await.is_err() {
+                break;
+            }
+        }
+    });
+
     let mut authenticated = false;
 
     while let Some(Ok(msg)) = receiver.next().await {
@@ -56,14 +67,14 @@ pub async fn handle_socket(
                     if token == expected_token {
                         authenticated = true;
                         let resp = serde_json::to_string(&ServerMessage::AuthOk).unwrap();
-                        let _ = sender.send(Message::Text(resp)).await;
+                        let _ = tx.send(Message::Text(resp));
                         info!("Mobile client autenticado com sucesso!");
                     } else {
                         let resp = serde_json::to_string(&ServerMessage::Error {
                             message: "Token inválido".into(),
                         })
                         .unwrap();
-                        let _ = sender.send(Message::Text(resp)).await;
+                        let _ = tx.send(Message::Text(resp));
                     }
                 }
                 Ok(other) => {
@@ -72,33 +83,24 @@ pub async fn handle_socket(
                             message: "Não autenticado".into(),
                         })
                         .unwrap();
-                        let _ = sender.send(Message::Text(resp)).await;
+                        let _ = tx.send(Message::Text(resp));
                         continue;
                     }
 
                     match other {
                         ClientMessage::Prompt { content, api_key } => {
-                            let mut current_agent = (*agent).clone_with_key(api_key);
-                            let sender_arc = Arc::new(Mutex::new(sender));
-                            let sender_clone = sender_arc.clone();
+                            let current_agent = agent.clone_with_key(api_key);
+                            let tx_stream = tx.clone();
 
                             let _ = current_agent
                                 .process_user_prompt(&content, move |chunk| {
-                                    let s = sender_clone.clone();
-                                    tokio::spawn(async move {
-                                        let msg = serde_json::to_string(&ServerMessage::Stream {
-                                            content: chunk,
-                                        })
-                                        .unwrap();
-                                        let mut locked = s.lock().await;
-                                        let _ = locked.send(Message::Text(msg)).await;
-                                    });
+                                    let msg = serde_json::to_string(&ServerMessage::Stream {
+                                        content: chunk,
+                                    })
+                                    .unwrap();
+                                    let _ = tx_stream.send(Message::Text(msg));
                                 })
                                 .await;
-                            sender = match Arc::try_unwrap(sender_arc) {
-                                Ok(m) => m.into_inner(),
-                                Err(_) => break,
-                            };
                         }
                         ClientMessage::ListFiles { path } => {
                             let rel_path = path.unwrap_or_default();
@@ -110,14 +112,14 @@ pub async fn handle_socket(
                                         entries,
                                     })
                                     .unwrap();
-                                    let _ = sender.send(Message::Text(resp)).await;
+                                    let _ = tx.send(Message::Text(resp));
                                 }
                                 Err(e) => {
                                     let resp = serde_json::to_string(&ServerMessage::Error {
                                         message: e.to_string(),
                                     })
                                     .unwrap();
-                                    let _ = sender.send(Message::Text(resp)).await;
+                                    let _ = tx.send(Message::Text(resp));
                                 }
                             }
                         }
@@ -130,14 +132,14 @@ pub async fn handle_socket(
                                         content,
                                     })
                                     .unwrap();
-                                    let _ = sender.send(Message::Text(resp)).await;
+                                    let _ = tx.send(Message::Text(resp));
                                 }
                                 Err(e) => {
                                     let resp = serde_json::to_string(&ServerMessage::Error {
                                         message: e.to_string(),
                                     })
                                     .unwrap();
-                                    let _ = sender.send(Message::Text(resp)).await;
+                                    let _ = tx.send(Message::Text(resp));
                                 }
                             }
                         }
@@ -149,14 +151,14 @@ pub async fn handle_socket(
                                         content: format!("Arquivo {} salvo com sucesso!", path),
                                     })
                                     .unwrap();
-                                    let _ = sender.send(Message::Text(resp)).await;
+                                    let _ = tx.send(Message::Text(resp));
                                 }
                                 Err(e) => {
                                     let resp = serde_json::to_string(&ServerMessage::Error {
                                         message: e.to_string(),
                                     })
                                     .unwrap();
-                                    let _ = sender.send(Message::Text(resp)).await;
+                                    let _ = tx.send(Message::Text(resp));
                                 }
                             }
                         }
@@ -168,18 +170,17 @@ pub async fn handle_socket(
                                         output,
                                     })
                                     .unwrap();
-                                    let _ = sender.send(Message::Text(resp)).await;
+                                    let _ = tx.send(Message::Text(resp));
                                 }
                                 Err(e) => {
                                     let resp = serde_json::to_string(&ServerMessage::Error {
                                         message: e.to_string(),
                                     })
                                     .unwrap();
-                                    let _ = sender.send(Message::Text(resp)).await;
+                                    let _ = tx.send(Message::Text(resp));
                                 }
                             }
                         }
-                        _ => {}
                     }
                 }
                 Err(e) => {
@@ -188,5 +189,6 @@ pub async fn handle_socket(
             }
         }
     }
-}
 
+    send_task.abort();
+}

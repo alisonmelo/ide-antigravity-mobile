@@ -14,6 +14,7 @@ pub struct AgentMessage {
     pub tool_calls: Option<Vec<tools::ToolCall>>,
 }
 
+#[derive(Clone)]
 pub struct AgentEngine {
     pub executor: Arc<Mutex<ToolExecutor>>,
     pub api_key: Option<String>,

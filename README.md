@@ -130,6 +130,33 @@ No celular, abra o app, toque em **"Conectar Novo Host"** e aponte a câmera par
 
 ---
 
+## 🌐 Onde Hospedar 100% de Graça (Free Tier Guide)
+
+Se você quer deixar o **Antigravity Daemon** rodando 24 horas por dia em segundo plano sem gastar R$ 1,00 e sem depender de deixar o PC ligado, aqui estão as melhores opções gratuitas do mercado:
+
+### 1. 👑 Oracle Cloud Infrastructure (OCI) — O Rei das VPS Gratuitas
+A Oracle oferece o melhor programa **Always Free** do mundo:
+- **4 OCPU ARM Ampere + 24 GB de RAM** (Gratuito para sempre! Você pode criar 1 máquina potente com 24GB ou até 4 instâncias menores).
+- **2 instâncias AMD x86** (1 GB de RAM cada, também grátis para sempre).
+- **200 GB de armazenamento** em disco e IP público IPv4 gratuito.
+- **Como usar:** Crie uma conta no Oracle Cloud Free Tier, suba uma VM Ubuntu 22.04/24.04 ARM ou x86, instale o daemon compilado e deixe rodando 24/7!
+
+### 2. 🛡️ Cloudflare Tunnels (Zero Trust) — Acesso Remoto Grátis sem Abrir Portas
+A Cloudflare não fornece uma VPS tradicional para rodar processos longos de terminal, mas oferece o **Cloudflare Tunnel (cloudflared)** que é **100% gratuito**:
+- Permite expor o seu PC de casa ou qualquer VPS para a internet com conexão criptografada HTTPS/WSS (ex: `orbit.seusite.com`).
+- **Sem abrir portas no roteador (sem Port Forwarding / NAT)** e sem risco de expor seu IP real.
+- Proteção DDoS nativa da Cloudflare.
+
+### 3. ☁️ Google Cloud Platform (GCP) — Instância e2-micro Grátis
+- O Google Cloud oferece **1 VM e2-micro gratuita para sempre** (2 vCPUs compartilhadas, 1 GB de RAM, 30 GB de disco) nas regiões dos EUA (`us-central1`, `us-east1`, `us-west1`).
+- Ideal para rodar o `agy-daemon` em Rust, já que o nosso binário consome menos de 25 MB de RAM!
+
+### 4. 🔗 Tailscale — VPN P2P Segura (Até 100 dispositivos grátis)
+- Se você prefere deixar o daemon rodando no seu computador pessoal de casa, instale o **Tailscale** no PC e no celular.
+- Conexão direta e criptografada (WireGuard) em qualquer lugar do mundo (4G, 5G ou Wi-Fi de hotel) sem precisar configurar DNS dinâmico nem mexer no roteador.
+
+---
+
 ## 🛡️ Segurança
 
 - Conexão criptografada de ponta a ponta.

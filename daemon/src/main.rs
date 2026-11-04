@@ -52,11 +52,7 @@ async fn main() -> Result<()> {
     // 4. Renderizar QR Code no Terminal
     println!("\n📱 Aponte a câmera do aplicativo Antigravity Mobile para parear:\n");
     if let Ok(code) = QrCode::new(pairing_string.as_bytes()) {
-        let image = code
-            .render::<unicode::Dense1x2>()
-            .dark_color(unicode::Dense1x2::Light)
-            .light_color(unicode::Dense1x2::Dark)
-            .build();
+        let image = code.render::<unicode::Dense1x2>().build();
         println!("{}", image);
     }
 
