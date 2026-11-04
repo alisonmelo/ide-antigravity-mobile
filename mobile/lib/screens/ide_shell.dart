@@ -512,3 +512,4 @@ class _IdeShellScreenState extends State<IdeShellScreen> {
     );
   }
 }
+

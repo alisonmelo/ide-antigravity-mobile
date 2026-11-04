@@ -143,3 +143,4 @@ No celular, abra o app, toque em **"Conectar Novo Host"** e aponte a câmera par
 Projeto idealizado e mantido com orgulho pela **CESIC** para fomentar o ecossistema brasileiro e global de desenvolvimento de software acelerado por Inteligência Artificial.
 
 Distribuído sob a licença [MIT](LICENSE).
+

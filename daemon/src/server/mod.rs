@@ -45,3 +45,4 @@ async fn ws_handler(
     let agent = state.agent.clone();
     ws.on_upgrade(move |socket| ws::handle_socket(socket, token, agent))
 }
+

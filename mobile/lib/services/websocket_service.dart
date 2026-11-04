@@ -114,3 +114,4 @@ class WebSocketService {
     _updateStatus(ConnectionStatus.disconnected);
   }
 }
+

@@ -37,3 +37,4 @@ jobs:
         with:
           name: daemon-${{ matrix.os }}
           path: daemon/target/release/${{ matrix.bin_name }}
+
