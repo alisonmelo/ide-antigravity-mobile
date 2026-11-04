@@ -1,0 +1,39 @@
+# OS metadata
+.DS_Store
+Thumbs.db
+
+# Environment and secrets
+.env
+*.local
+*.key
+*.token
+
+# Rust / Cargo
+/daemon/target/
+/daemon/Cargo.lock
+
+# Flutter / Dart
+/mobile/.dart_tool/
+/mobile/.flutter-plugins
+/mobile/.flutter-plugins-dependencies
+/mobile/.packages
+/mobile/.pub-cache/
+/mobile/.pub/
+/mobile/build/
+/mobile/*.iml
+/mobile/.idea/
+
+# Android build outputs
+/mobile/android/.gradle
+/mobile/android/local.properties
+/mobile/android/app/build/
+
+# iOS build outputs
+/mobile/ios/.generated/
+/mobile/ios/Flutter/App.framework
+/mobile/ios/Flutter/Flutter.framework
+/mobile/ios/Flutter/Generated.xcconfig
+/mobile/ios/Pods/
+
+# Temporary logs
+*.log
