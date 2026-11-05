@@ -11,3 +11,4 @@
 - Mantenha as respostas concisas, estruturadas e com evidências de teste.
 - Evite reescrever arquivos inteiros quando edições pontuais forem suficientes.
 - Siga as regras de arquitetura: Rust Daemon em `daemon/` e Flutter App em `mobile/`.
+
